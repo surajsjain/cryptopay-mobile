@@ -1,3 +1,4 @@
+import 'package:crypto_pay/pages/ConfirmTransaction.dart';
 import 'package:crypto_pay/pages/Home.dart';
 import 'package:crypto_pay/pages/login/pages/LoginPage.dart';
 import 'package:crypto_pay/utils/HexColor.dart';
@@ -16,6 +17,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/home': (context) => Home(),
+        '/confirm_transaction': (context) => ConfirmTransaction(),
 //        '/workout_session_details': (context) => WorkoutSessionDetails(),
 //        '/exercise_details': (context) => ExerciseDetails(),
       },

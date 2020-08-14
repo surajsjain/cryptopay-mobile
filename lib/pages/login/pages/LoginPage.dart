@@ -20,7 +20,8 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   Database db;
 
-  String baseURL = "http://10.0.2.2:8001/";
+//  String baseURL = "http://10.0.2.2:8001/";
+  String baseURL = "http://192.168.1.9:8001/";
 
   bool failedLogin = false;
 
@@ -53,7 +54,9 @@ class _LoginPageState extends State<LoginPage> {
           'token': resp['auth_token'],
         },
       );
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/home', arguments: {
+        'baseURL': this.baseURL,
+      });
     } else {
       setState(() {
         this.failedLogin = true;
@@ -89,7 +92,9 @@ class _LoginPageState extends State<LoginPage> {
 
     List users = await db.query('user');
     if (users.length > 0) {
-      Navigator.pushReplacementNamed(this.context, '/home');
+      Navigator.pushReplacementNamed(this.context, '/home', arguments: {
+        'baseURL': this.baseURL,
+      });
     }
   }
 
