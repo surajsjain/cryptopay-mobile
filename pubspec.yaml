@@ -34,6 +34,7 @@ dev_dependencies:
     sdk: flutter
   sqflite: any
   path_provider: any
+  http: ^0.12.0+4
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

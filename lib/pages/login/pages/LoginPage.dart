@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:crypto_pay/pages/login/widget/button.dart';
 import 'package:crypto_pay/pages/login/widget/inputEmail.dart';
 import 'package:crypto_pay/pages/login/widget/password.dart';
 import 'package:crypto_pay/pages/login/widget/textLogin.dart';
 import 'package:crypto_pay/pages/login/widget/verticalText.dart';
 import 'package:flutter/material.dart';
+import "package:http/http.dart";
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -17,8 +20,45 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   Database db;
 
-  void logIn() async {
-    print('Hello! ${this.emailController.text}');
+  String baseURL = "http://10.0.2.2:8001/";
+
+  bool failedLogin = false;
+
+  BuildContext context;
+
+  void logIn(BuildContext context) async {
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    Map<String, String> reqData = {
+      "email": email,
+      "password": password,
+    };
+    Map<String, String> reqHeaders = {
+      "Content-type": "application/json",
+    };
+    String loginURL = this.baseURL + 'phoneservice/login/';
+    Response res = await post(
+      loginURL,
+      body: jsonEncode(reqData),
+      headers: reqHeaders,
+    );
+
+    Map resp = jsonDecode(res.body);
+    if (resp['auth_status'] == true) {
+      this.db.insert(
+        'user',
+        {
+          'email': email,
+          'token': resp['auth_token'],
+        },
+      );
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      setState(() {
+        this.failedLogin = true;
+      });
+    }
   }
 
   void checkAndCreateDB() async {
@@ -46,6 +86,11 @@ class _LoginPageState extends State<LoginPage> {
 //        where: "email = ?", whereArgs: ['surajsjain@hotmail.com']);
 
 //    print(await (db.query('user')));
+
+    List users = await db.query('user');
+    if (users.length > 0) {
+      Navigator.pushReplacementNamed(this.context, '/home');
+    }
   }
 
   @override
@@ -56,23 +101,33 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    this.context = context;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-//          gradient: LinearGradient(
-//              begin: Alignment.topRight,
-//              end: Alignment.bottomLeft,
-//              colors: [Colors.blueGrey, Colors.lightBlueAccent]),
           color: Colors.deepOrange,
         ),
         child: ListView(
           children: <Widget>[
             Column(
               children: <Widget>[
-                Row(children: <Widget>[
-                  VerticalText(),
-                  TextLogin(),
-                ]),
+                Row(
+                  children: <Widget>[
+                    VerticalText(),
+                    TextLogin(),
+                  ],
+                ),
+                Padding(
+                  padding: EdgeInsets.all(6.0),
+                  child: Text(
+                    'Looks like your email or the password is incorrect. Please try again',
+                    style: TextStyle(
+                      fontSize: (this.failedLogin) ? 24 : 0,
+                      color: Colors.deepOrange,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                ),
                 InputEmail(
                   controller: this.emailController,
                 ),
@@ -81,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 ButtonLogin(
                   onPressedAction: () {
-                    this.logIn();
+                    this.logIn(context);
                   },
                 ),
               ],
